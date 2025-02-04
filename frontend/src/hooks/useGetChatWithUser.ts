@@ -8,6 +8,7 @@ export function getToken(): string | null {
 const useGetChatWithUser = (id: string) => {
   try {
     const response = AxiosInstance.get(`/messages/get-chat/${id}`, {});
+    console.log("res", response);
     return response;
   } catch (error) {
     throw error;

@@ -12,10 +12,10 @@ export function initializeSocket(server: HTTPServer) {
   });
 
   io.on("connection", (socket) => {
-    console.log(`Client connected ${socket.id}`);
+    // console.log(`Client connected ${socket.id}`);
 
     socket.on("join", async (userId: string) => {
-      console.log(`${userId} connected  room `);
+      // console.log(`${userId} connected  room `);
       if (!userId) {
         socket.emit("error-message", "userId is not found");
         return;
@@ -35,7 +35,7 @@ export function initializeSocket(server: HTTPServer) {
           socket.emit("error-message", "ReciverId and Message is required");
           return;
         }
-        console.log("reciverId", recieverId);
+
         const socketID = await prisma.user.findUnique({
           where: {
             id: recieverId,
@@ -44,7 +44,7 @@ export function initializeSocket(server: HTTPServer) {
             socketId: true,
           },
         });
-        console.log(socketID);
+
         if (socketID?.socketId) {
           const message = await prisma.message.create({
             data: {
@@ -53,13 +53,7 @@ export function initializeSocket(server: HTTPServer) {
               body: text,
             },
           });
-          // const message = {
-          //   senderId: userId,
-          //   recieverId: recieverId,
-          //   body: text,
-          //   seen: false,
-          //   createdAt: new Date(),
-          // };
+
           callback(message);
           socket.to(socketID?.socketId).emit("recieve-msg", message);
         }
@@ -67,7 +61,7 @@ export function initializeSocket(server: HTTPServer) {
     );
 
     socket.on("disconnect", async () => {
-      console.log("Client disconnected", socket.id);
+      // console.log("Client disconnected", socket.id);
     });
   });
 }

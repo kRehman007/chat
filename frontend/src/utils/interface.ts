@@ -23,6 +23,8 @@ export interface User {
   password: string;
   gender: string;
   profilePic?: string;
+  createdAt?: Date | string | undefined;
+  online?: boolean;
 }
 
 export interface Message {

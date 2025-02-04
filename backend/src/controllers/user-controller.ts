@@ -30,6 +30,7 @@ export const userSignup = async (
         password: hashedPassword,
         gender,
         profilePic: gender === "male" ? MenProfile : GirlProfile,
+        online: true,
       },
     });
 
@@ -43,6 +44,7 @@ export const userSignup = async (
         email: createdUser.email,
         gender: createdUser.gender,
         profilePic: createdUser.profilePic,
+        online: createdUser.online,
       },
       token,
     });
@@ -80,6 +82,7 @@ export const userLogin = async (req: Request, res: Response): Promise<void> => {
         email: user.email,
         gender: user.gender,
         profilePic: user.profilePic,
+        online: true,
         token,
       },
       token,
@@ -91,8 +94,16 @@ export const userLogin = async (req: Request, res: Response): Promise<void> => {
     return;
   }
 };
-export const userLogout = (req: Request, res: Response) => {
+export const userLogout = async (req: Request, res: Response) => {
   try {
+    await prisma.user.update({
+      where: {
+        id: req.user?.id,
+      },
+      data: {
+        online: false,
+      },
+    });
     res.clearCookie("token");
     res.status(200).json({ message: "user logout successfully" });
   } catch (error: any) {
@@ -116,6 +127,7 @@ export const getAllUsers = async (req: Request, res: Response) => {
         email: true,
         gender: true,
         profilePic: true,
+        online: true,
       },
     });
     res.status(201).json(users);

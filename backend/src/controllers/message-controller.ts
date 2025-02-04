@@ -29,8 +29,6 @@ export const sendMessage = async (req: Request, res: Response) => {
 export const getChatofTwoUsers = async (req: Request, res: Response) => {
   try {
     const { id: recieverId } = req.params;
-    console.log("rec", recieverId);
-    console.log("sen", req.user?.id);
 
     const lastMessage = await prisma.message.findFirst({
       where: {
@@ -43,7 +41,7 @@ export const getChatofTwoUsers = async (req: Request, res: Response) => {
     });
 
     if (!lastMessage) {
-      res.status(404).json({ error: "No messages found" });
+      res.status(200).json({ messages: [] });
       return;
     }
 
@@ -51,7 +49,7 @@ export const getChatofTwoUsers = async (req: Request, res: Response) => {
       where: { id: lastMessage.id },
       data: { seen: true },
     });
-    console.log("respponse", resp);
+
     const messages = await prisma.message.findMany({
       where: {
         OR: [

@@ -5,27 +5,26 @@ import useGetChatWithUser from "../hooks/useGetChatWithUser";
 import { useEffect, useState } from "react";
 import { useAppSelector } from "../hooks/apppandDispatch";
 import { useDispatch } from "react-redux";
-import {
-  setAllRecipientsLastMsg,
-  setUserMessages,
-} from "../Redux/Slices/user-slice";
-import { Message, User } from "../utils/interface";
-
-import { Link, useNavigate } from "react-router-dom";
-import useLogout from "../hooks/useLogout";
-import toast from "react-hot-toast";
-import { useGetAllUsersQuery } from "../Redux/RTK/MessageAPI";
+import { setUserMessages } from "../Redux/Slices/user-slice";
+import { User } from "../utils/interface";
 
 export default function Home() {
   const { socket } = useAppSelector((state) => state.socket);
   const { user } = useAppSelector((state) => state.user);
   const [recieverId, setRecieverId] = useState<string | null>(null);
   const [recipient, setRecipient] = useState<User | null>(null);
-  const [lastMsg, setLastMsg] = useState<Message | null>(null);
-  const { data } = useGetAllUsersQuery();
+  const [Isseen, setIsSeen] = useState(false);
 
+  const [SideBarScreen, setSideBarScreen] = useState(true);
+  const [MsgScreen, setMsgScreen] = useState(true);
   const dispatch = useDispatch();
-  const navigate = useNavigate();
+
+  useEffect(() => {
+    if (window.innerWidth <= 700) {
+      setSideBarScreen(true);
+      setMsgScreen(false);
+    }
+  }, [window.innerWidth]);
 
   useEffect(() => {
     if (socket) {
@@ -34,11 +33,15 @@ export default function Home() {
   }, [user, socket]);
 
   async function getChatWithUser(recipient: User | null) {
+    if (window.innerWidth <= 700) {
+      setSideBarScreen(false);
+      setMsgScreen(true);
+    }
+    setIsSeen(true);
     setRecieverId(String(recipient?.id));
     setRecipient(recipient);
 
     try {
-      console.log("redce", recipient?.id);
       const res = await useGetChatWithUser(String(recipient?.id));
       dispatch(setUserMessages(res.data.messages));
     } catch (error: any) {
@@ -46,33 +49,18 @@ export default function Home() {
     }
   }
 
-  async function Logout() {
-    try {
-      await useLogout();
-      navigate("/login");
-    } catch (error: any) {
-      console.log("error in logging out", error.message);
-      toast.error(error?.response?.data?.error);
-    }
-  }
-  useEffect(() => {
-    const response = data?.map((recipient) => getChatWithUser(recipient));
-    // console.log("alusers",response)
-    // dispatch(setAllRecipientsLastMsg)
-  }, [data]);
   return (
     <Box sx={{ display: "flex", maxWidth: "100vw", height: "100vh" }}>
-      <Link to="" onClick={Logout}>
-        Logout
-      </Link>
-      <Sidebar
-        getChatWithUser={getChatWithUser}
-        lastMsg={lastMsg}
-        recieverId={recieverId}
-      />
+      {SideBarScreen && (
+        <Sidebar
+          getChatWithUser={getChatWithUser}
+          Isseen={Isseen}
+          setIsSeen={setIsSeen}
+        />
+      )}
 
       <Box
-        sx={{ display: { xs: "none", md: "flex" } }}
+        sx={{ display: MsgScreen ? "flex" : "none" }}
         flexDirection="column"
         width="70%"
         justifyContent="space-between"
@@ -80,8 +68,11 @@ export default function Home() {
       >
         <TextMessages
           recieverId={recieverId}
+          setRecieverId={setRecieverId}
           recipient={recipient || null}
-          setLastMsg={setLastMsg}
+          setIsSeen={setIsSeen}
+          setSideBarScreen={setSideBarScreen}
+          setMsgScreen={setMsgScreen}
         />
       </Box>
     </Box>

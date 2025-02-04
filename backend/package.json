@@ -3,8 +3,8 @@
   "version": "1.0.0",
   "main": "index.js",
   "scripts": {
-    "build": "npx tsc",
-    "start": "node dist/index.js",
+    "build": "npx tsc && npm install && prisma generate --schema=./prisma/schema.prisma && npm install --prefix frontend && npm run build --prefix frontend",
+    "start": "node dist/server.js",
     "dev": "tsx src/server.ts"
   },
   "type": "module",
